@@ -100,4 +100,4 @@ while True:
         current_cell = stack.pop()
 
     pygame.display.flip()
-    clock.tick(80)
+    clock.tick(25)
