@@ -2,7 +2,7 @@ import pygame
 from random import choice
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 10
+TILE = 50
 cols, rows = WIDTH // TILE, HEIGHT // TILE
 
 pygame.init()
@@ -25,13 +25,13 @@ class Cell:
             pygame.draw.rect(sc, pygame.Color('black'), (x, y, TILE, TILE)) 
 
         if self.walls['top']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y), (x + TILE, y), 2)
+            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y), (x + TILE, y), 3)
         if self.walls['right']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y), (x + TILE, y + TILE), 2)
+            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y), (x + TILE, y + TILE), 3)
         if self.walls['bottom']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y + TILE), (x, y + TILE), 2)
+            pygame.draw.line(sc, pygame.Color('darkorange'), (x + TILE, y + TILE), (x, y + TILE), 3)
         if self.walls['left']:
-            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y + TILE), (x, y), 2)
+            pygame.draw.line(sc, pygame.Color('darkorange'), (x, y + TILE), (x, y), 3)
 
     def check_cell(self, x, y):
         find_index = lambda x, y: x + y * cols
@@ -93,11 +93,11 @@ while True:
         next_cell.visited = True
         stack.append(current_cell)
         colors.append((min(color, 255), 10, 100))
-        color += 3
+        color += 1
         remove_walls(current_cell, next_cell)
         current_cell = next_cell
     elif stack:
         current_cell = stack.pop()
 
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(80)
