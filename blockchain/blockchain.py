@@ -8,7 +8,6 @@ def updatehash(*args):
     h.update(hashing_text.encode('utf-8'))
     return h.hexdigest()
         
-
 class Block():
     data = None
     hash = None
@@ -20,8 +19,7 @@ class Block():
         self.number = number
         
     def hash(self):
-        return updatehash(self.previous_hash, self.number, self.data, self.nonce)
-        
+        return updatehash(self.previous_hash, self.number, self.data, self.nonce)  
 
 class Blockchaom():
     pass
