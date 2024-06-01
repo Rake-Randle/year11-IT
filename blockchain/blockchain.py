@@ -60,7 +60,6 @@ class Blockchain():
             else:
                 block.nonce += 1
             
-            
     def isValid(self):
         for i in range(1, len(self.chain)):
             _previous = self.chain[i].previous_hash
@@ -69,6 +68,7 @@ class Blockchain():
                 return False
             
         return True
+    
 def main():
     blockchain = Blockchain()
     database = ["jello", "dw", "peoifer"]
@@ -85,7 +85,6 @@ def main():
     blockchain.chain[2].data = "NEW DATA"
     blockchain.mine(blockchain.chain[2])
     print(blockchain.isValid())   
-    
 
 if __name__ == '__main__':
     main()
