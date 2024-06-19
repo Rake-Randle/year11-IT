@@ -4,8 +4,6 @@
 #to use sha256 hash for the blockchain
 from hashlib import sha256
 
-
-
 #Takes in any number of arguments and produces a sha256 hash as a result
 def updatehash(*args):
     hashing_text = ""; h = sha256()
@@ -48,11 +46,10 @@ class Block():
             )
         )
 
-
 #The "LinkedList" of the blocks-- a chain of blocks.
 class Blockchain():
     #the number of zeros in front of each hash
-    difficulty = int(4)
+    difficulty = 4
 
     #restarts a new blockchain or the existing one upon initialization
     def __init__(self):
@@ -76,7 +73,10 @@ class Blockchain():
         #loop until nonce that satisifeis difficulty is found
         while True:
             if block.hash()[:self.difficulty] == "0" * self.difficulty:
-                self.add(block); break
+                self.add(block)
+                print(block)
+                break
+                
             else:
                 #increase the nonce by one and try again
                 block.nonce += 1
@@ -93,7 +93,6 @@ class Blockchain():
 
         return True
 
-
 #for testing purposes
 def main():
     blockchain = Blockchain()
@@ -106,17 +105,14 @@ def main():
        data = str.lower(input(f"What data is in your {num} block: "))
        blockchain.mine(Block(num, data=data))
 
-    for block in blockchain.chain:
-        print(block)
-
     print(f"Is the blockchain valid: {blockchain.isValid()}")
-    
 
 def displayChain():
     blockchain = Blockchain()
-    print(blockchain.chain)
-
-
+    
+    for block in blockchain.chain:
+        print(block)
+        
 while True:
     print("\nWhat do you want to do: \n [M]ine blocks \n [S]how Blockchain \n [Q]uit")
     query = str.lower(input("Command: "))
