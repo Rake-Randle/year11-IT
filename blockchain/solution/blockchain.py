@@ -1,137 +1,132 @@
-import hashlib
-import datetime
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
-
-difficulty = 5
-amount = 3
-
-HASH_TARGET: str = difficulty * "0"
+#to use sha256 hash for the blockchain
+from hashlib import sha256
 
 
-@dataclass(frozen=True)
-class Block:
 
-    index: int
-    timestamp: str
-    data: str
-    previous_hash: str
-    nonce: int = 0
-    hash: str = "0"
+#Takes in any number of arguments and produces a sha256 hash as a result
+def updatehash(*args):
+    hashing_text = ""; h = sha256()
 
-    @property
-    def hash_data(self) -> bytes:
-        return f"{str(self.index)}{str(self.data)}{str(self.timestamp)}{str(self.previous_hash)}{str(self.nonce)}".encode(
-            "utf-8"
+    #loop through each argument and hash
+    for arg in args:
+        hashing_text += str(arg)
+
+    h.update(hashing_text.encode('utf-8'))
+    return h.hexdigest()
+
+#The "node" of the blockchain. Points to the previous block by its unique hash in previous_hash.
+class Block():
+
+    #default data for block defined in constructor. Minimum specified should be number and data.
+    def __init__(self,number=0, previous_hash="0"*64, data=None, nonce=0):
+        self.data = data
+        self.number = number
+        self.previous_hash = previous_hash
+        self.nonce = nonce
+
+    #returns a sha256 hash for the block's data. Function instead of variable in constructor
+    #to avoid corruption of the variable.
+    def hash(self):
+        return updatehash(
+            self.number,
+            self.previous_hash,
+            self.data,
+            self.nonce
         )
 
-    def __str__(self) -> str:
-        return f"{self.data}\nindex={self.index}\ntime={self.timestamp}\nprevious_hash={self.previous_hash}\nhash={self.hash}\nnonce={self.nonce}\n"
-
-
-class Chain:
-
-    __blockchain: list[Block] = []
-
-    @property
-    def blockchain(self) -> list:
-        """blockchain getter
-
-        Returns:
-            list: copy of the blockchain
-        """
-        return self.__blockchain[:]
-
-    def __init__(self) -> None:
-        self.__blockchain.append(
-            self.proof_of_work(
-                Block(0, datetime.datetime.now(), "Genesis Block", "0" * 64)
+    #returns a string of the block's data. Useful for diagnostic print statements.
+    def __str__(self):
+        return str("Block#: %s\nHash: %s\nPrevious: %s\nData: %s\nNonce: %s\n" %(
+            self.number,
+            self.hash(),
+            self.previous_hash,
+            self.data,
+            self.nonce
             )
         )
 
-    def proof_of_work(self, block: Block) -> Block:
-        """hash block data until hash target is met
 
-        Args:
-            block (Block): new Block
+#The "LinkedList" of the blocks-- a chain of blocks.
+class Blockchain():
+    #the number of zeros in front of each hash
+    difficulty = int(4)
 
-        Returns:
-            Block: new block with a new nonce that meets hash target requirements
-        """
-        new_hash: str = ""
-        _nonce: int = block.nonce
+    #restarts a new blockchain or the existing one upon initialization
+    def __init__(self):
+        self.chain = []
 
-        while new_hash[: len(HASH_TARGET)] != HASH_TARGET:
-            new_hash = hashlib.sha256(
-                f"{str(block.index)}{str(block.data)}{str(block.timestamp)}{str(block.previous_hash)}{str(_nonce)}".encode(
-                    "utf-8"
-                )
-            ).hexdigest()
-            _nonce += 1
+    #add a new block to the chain
+    def add(self, block):
+        self.chain.append(block)
 
-        return Block(
-            block.index,
-            block.timestamp,
-            block.data,
-            block.previous_hash,
-            nonce=_nonce - 1,
-            hash=new_hash,
-        )
+    #remove a block from the chain
+    def remove(self, block):
+        self.chain.remove(block)
 
-    def add_block(self, data: str) -> None:
-        """adds a new block to the chain with the given data attached
+    #find the nonce of the block that satisfies the difficulty and add to chain
+    def mine(self, block):
+        #attempt to get the hash of the previous block.
+        #this should raise an IndexError if this is the first block.
+        try: block.previous_hash = self.chain[-1].hash()
+        except IndexError: pass
 
-        Args:
-            data (str): data to attach to the new block
-        """
-        previous_block: Block = self.__blockchain[-1]
+        #loop until nonce that satisifeis difficulty is found
+        while True:
+            if block.hash()[:self.difficulty] == "0" * self.difficulty:
+                self.add(block); break
+            else:
+                #increase the nonce by one and try again
+                block.nonce += 1
 
-        new_block = self.proof_of_work(
-            Block(
-                len(self.__blockchain),
-                datetime.datetime.now(),
-                data,
-                previous_hash=previous_block.hash,
-            )
-        )
-
-        self.__blockchain.append(new_block)
-
-    def check_validity(self) -> bool:
-        """test that each blocks hash matches the value in the classes hash variable
-
-        Returns:
-            bool: pass/fail
-        """
-        current_block: Block = self.__blockchain[0]
-        previous_block: Block = None
-
-        # check that the first block's hash is correct before checking the rest of the chain
-        if current_block.hash != hashlib.sha256(current_block.hash_data).hexdigest():
-            return False
-
-        for i in range(1, len(self.__blockchain)):
-            current_block = self.__blockchain[i]
-            previous_block = self.__blockchain[i - 1]
-
-            if (
-                current_block.hash
-                != hashlib.sha256(current_block.hash_data).hexdigest()
-                or current_block.previous_hash != previous_block.hash
-            ):
+    #check if blockchain is valid
+    def isValid(self):
+        #loop through blockchain
+        for i in range(1,len(self.chain)):
+            _previous = self.chain[i].previous_hash
+            _current = self.chain[i-1].hash()
+            #compare the previous hash to the actual hash of the previous block
+            if _previous != _current or _current[:self.difficulty] != "0"*self.difficulty:
                 return False
 
         return True
 
 
-if __name__ == "__main__":
-    new_chain = Chain()
+#for testing purposes
+def main():
+    blockchain = Blockchain()
+    
+    amount = int(input("How many blocks do you want to mine: "))
+    num = 0
+    
+    while num < amount:
+       num += 1
+       data = str.lower(input(f"What data is in your {num} block: "))
+       blockchain.mine(Block(num, data=data))
 
-    for i in range(amount):
-        new_chain.add_block(f"Block {i}")
+    for block in blockchain.chain:
+        print(block)
 
-    for _block in new_chain.blockchain:
-        print(_block)
+    print(f"Is the blockchain valid: {blockchain.isValid()}")
+    
 
-    print("Checking validity...")
-    print(f"Validity = {new_chain.check_validity()}")
+def displayChain():
+    blockchain = Blockchain()
+    print(blockchain.chain)
+
+
+while True:
+    print("\nWhat do you want to do: \n [M]ine blocks \n [S]how Blockchain \n [Q]uit")
+    query = str.lower(input("Command: "))
+    if query == 'm':
+        main()
+    elif query == 's':
+        displayChain()
+    elif query == 'q':
+        break
+    else:
+        print("Please provide a valid input")
+quit
+    
