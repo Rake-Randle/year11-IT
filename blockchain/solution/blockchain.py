@@ -45,7 +45,7 @@ class Block():
             self.nonce
             )
         )
-
+        
 #The "LinkedList" of the blocks-- a chain of blocks.
 class Blockchain():
     #the number of zeros in front of each hash
@@ -54,7 +54,7 @@ class Blockchain():
     #restarts a new blockchain or the existing one upon initialization
     def __init__(self):
         self.chain = []
-
+        
     #add a new block to the chain
     def add(self, block):
         self.chain.append(block)
@@ -71,16 +71,19 @@ class Blockchain():
         except IndexError: pass
 
         #loop until nonce that satisifeis difficulty is found
+        chains = []
         while True:
             if block.hash()[:self.difficulty] == "0" * self.difficulty:
                 self.add(block)
                 print(block)
+                chains.append(block)
                 break
                 
             else:
                 #increase the nonce by one and try again
                 block.nonce += 1
-
+        return chains[:]
+    
     #check if blockchain is valid
     def isValid(self):
         #loop through blockchain
@@ -94,9 +97,7 @@ class Blockchain():
         return True
 
 #for testing purposes
-def main():
-    blockchain = Blockchain()
-    
+def mining(blockchain):
     amount = int(input("How many blocks do you want to mine: "))
     num = 0
     
@@ -106,23 +107,29 @@ def main():
        blockchain.mine(Block(num, data=data))
 
     print(f"Is the blockchain valid: {blockchain.isValid()}")
-
-def displayChain():
-    blockchain = Blockchain()
     
-    for block in blockchain.chain:
+def displayChain(chaining):
+    for block in chaining:
         print(block)
         
-while True:
-    print("\nWhat do you want to do: \n [M]ine blocks \n [S]how Blockchain \n [Q]uit")
-    query = str.lower(input("Command: "))
-    if query == 'm':
-        main()
-    elif query == 's':
-        displayChain()
-    elif query == 'q':
-        break
-    else:
-        print("Please provide a valid input")
-quit
+def main():
+    blockchain = Blockchain()
+    while True:
+        print("\nWhat do you want to do: \n [M]ine blocks \n [S]how Blockchain \n [Q]uit")
+        query = str.lower(input("Command: "))
+        if query == 'm':
+            mining(blockchain)
+        elif query == 's':
+            displayChain(blockchain.chain)
+        elif query == 'q':
+            break
+        else:
+            print("Please provide a valid input")
+    quit
+
+if __name__ == "__main__":
+    main()
     
+"""
+We Love Oliver Gotzinger @https://github.com/OliverGot
+"""    
