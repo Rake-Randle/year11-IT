@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from hashlib import sha256
 
 def updatehash(*args):
