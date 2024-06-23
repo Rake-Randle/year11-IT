@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from block import Block
-        
+"""
+import the file block.py into this file for easier code to read
+"""        
+
 class Blockchain:
     """
     The "LinkedList" of the blocks-- a chain of blocks.
